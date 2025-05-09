@@ -369,8 +369,8 @@ SCHEDULE
 -- -------------------------------------------------------------------------
 
 PYACTION
-	'EXAMPLE2'	'UNLIMITED' /
-	'example_2.py' /
+	'EXAMPLE3'	'UNLIMITED' /
+	'example_3.py' /
 
 
 RPTSCHED

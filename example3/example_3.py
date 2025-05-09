@@ -19,6 +19,12 @@
 import opm_embedded as opm_embedded
 import pandas as pd
 import subprocess
+from api.api import WellConInje
+
+# CURRENT SUMMARY, REPORT STEP and SCHEDULE
+current_summary_state = opm_embedded.current_summary_state
+current_report_step = opm_embedded.current_report_step
+current_schedule = opm_embedded.current_schedule
 
 
 # SETUP
@@ -29,9 +35,9 @@ if not "setup_done" in locals():
   state = dict()
 
   # PATH CONFIG
-  yaml_model_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example2/simple_model_example/modified_simple_model_example.yml"
-  timeseries_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example2/simple_model_example/production_data.csv"
-  ecalc_output = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example2/ecalc_output"
+  yaml_model_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/simple_model_example/modified_simple_model_example.yml"
+  timeseries_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/simple_model_example/production_data.csv"
+  ecalc_output = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/ecalc_output"
 
   # SUPPORTED KEYWORDS
   keywords = ["FOPR", "FWIR", "FGIR", "FWPR"]
@@ -39,27 +45,28 @@ if not "setup_done" in locals():
   # REPORT STEPS THAT ECALC SHOULD RUN
   ecalc_reportsteps = [x for x in range(120) if (x + 1) % 10 == 0]
 
+  # CREATE WellConInje class
+  inj_cntl = WellConInje()
+
   # FINISH SETUP
   setup_done = True
   opm_embedded.OpmLog.info("PYACTION SETUP DONE")
 
 
 # DEFINE WELL UPDATE FUNCTIONS
-def update_well_injection_constrain(well_name: str, value: float, reportstep: int):
-  if (current_report_step == reportstep):
-    kw = f"""
-    WCONINJE
-    -- Item #:1	 2	 3	 4	5      6  7
-        '{well_name}'	'GAS'	'OPEN'	'RATE'	{value} 1* 9014 /
-    /
-    """
-    current_schedule.insert_keywords(kw)
+# def update_well_injection_constrain(well_name: str, value: float, reportstep: int):
+#   if (current_report_step == reportstep):
+#     kw = f"""
+#     WCONINJE
+#     -- Item #:1	 2	 3	 4	5      6  7
+#         '{well_name}'	'GAS'	'OPEN'	'RATE'	{value} 1* 9014 /
+#     /
+#     """
+#     current_schedule.insert_keywords(kw)
 
 
-# CURRENT SUMMARY, REPORT STEP and SCHEDULE
-current_summary_state = opm_embedded.current_summary_state
-current_report_step = opm_embedded.current_report_step
-current_schedule = opm_embedded.current_schedule
+if (current_report_step in ecalc_reportsteps):
+  inj_cntl.update("INJ", "GAS", "OPEN", "RATE", "50000", "1*", 9014, "1*", "1*")
 
 
 # UPDATE STATE EVERY REPORTSTEP
@@ -78,12 +85,6 @@ if not time in state["DATES"]:
             if kw not in state:
                 state[kw] = []
             state[kw].append(current_summary_state[kw])
-
-
-# UPDATE WELL CONSTRAINT IN SPECIFIC REPORT STEP
-update_well_injection_constrain("INJ", 0, 5)
-update_well_injection_constrain("INJ", 500000, 10)
-update_well_injection_constrain("INJ", 10, 15)
 
 
 # RUN ECALC FOR SELECTED REPORT STEPS
