@@ -35,9 +35,9 @@ if not "setup_done" in locals():
   state = dict()
 
   # PATH CONFIG
-  yaml_model_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/simple_model_example/modified_simple_model_example.yml"
-  timeseries_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/simple_model_example/production_data.csv"
-  ecalc_output = "/home/luantsp/Documentos/Projetos/FlowEcalc/examples/example3/ecalc_output"
+  yaml_model_path = "/home/luantsp/Documentos/Projetos/Flow-Ecalc-Dev-Examples/example3/simple_model_example/modified_simple_model_example.yml"
+  timeseries_path = "/home/luantsp/Documentos/Projetos/Flow-Ecalc-Dev-Examples/example3/simple_model_example/production_data.csv"
+  ecalc_output = "/home/luantsp/Documentos/Projetos/Flow-Ecalc-Dev-Examples/example3/ecalc_output"
 
   # SUPPORTED KEYWORDS
   keywords = ["FOPR", "FWIR", "FGIR", "FWPR"]
@@ -45,33 +45,19 @@ if not "setup_done" in locals():
   # REPORT STEPS THAT ECALC SHOULD RUN
   ecalc_reportsteps = [x for x in range(120) if (x + 1) % 10 == 0]
 
-  # CREATE WellConInje class
-  inj_cntl = WellConInje()
-
   # FINISH SETUP
   setup_done = True
   opm_embedded.OpmLog.info("PYACTION SETUP DONE")
 
 
-# DEFINE WELL UPDATE FUNCTIONS
-# def update_well_injection_constrain(well_name: str, value: float, reportstep: int):
-#   if (current_report_step == reportstep):
-#     kw = f"""
-#     WCONINJE
-#     -- Item #:1	 2	 3	 4	5      6  7
-#         '{well_name}'	'GAS'	'OPEN'	'RATE'	{value} 1* 9014 /
-#     /
-#     """
-#     current_schedule.insert_keywords(kw)
-
-
 if (current_report_step in ecalc_reportsteps):
-  inj_cntl.update("INJ", "GAS", "OPEN", "RATE", "50000", "1*", 9014, "1*", "1*")
+  inj_cntl = WellConInje(current_schedule)
+  inj_cntl.update("INJ", "GAS", "OPEN", "RATE", "50000", "1*", "9014", "1*", "1*")
 
 
 # UPDATE STATE EVERY REPORTSTEP
 if "DATES" not in state:
-    state["DATES"] = []
+  state["DATES"] = []
 
 
 # only add state if not duplicate DATES exists
@@ -106,6 +92,4 @@ if (current_report_step in ecalc_reportsteps):
   print(output.stderr)
 
   opm_embedded.OpmLog.info("="*60)
-
-
 

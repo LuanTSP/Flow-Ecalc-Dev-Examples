@@ -13,5 +13,5 @@ class WellConInje:
     cntl_mode: str, surf_rate: str, resv_rate: str,
     bhp_prses: str, thp_pres: str, vfp_table: str
     ):
-    complete_kw = self.template_kw + f"{well_name} {fluid_type} {open_shut} {cntl_mode} {surf_rate} {resv_rate} {bhp_prses} {thp_pres} {vfp_table}"
+    complete_kw = self.template_kw + f"{well_name} {fluid_type} {open_shut} {cntl_mode} {surf_rate} {resv_rate} {bhp_prses} {thp_pres} {vfp_table} / \n /"
     self.schedule.insert_keywords(complete_kw)
