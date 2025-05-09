@@ -1,0 +1,74 @@
+import opm_embedded as opm_embedded
+import pandas as pd
+import subprocess
+
+
+# SETUP
+if not "setup_done" in locals():
+  opm_embedded.OpmLog.info("STARTING PYACTION SETUP...")
+
+  # CREATE STATE
+  state = dict()
+
+  # PATH CONFIG
+  yaml_model_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/example1/simple_model_example/modified_simple_model_example.yml"
+  timeseries_path = "/home/luantsp/Documentos/Projetos/FlowEcalc/example1/simple_model_example/production_data.csv"
+  ecalc_output = "/home/luantsp/Documentos/Projetos/FlowEcalc/example1/ecalc_output"
+
+  # SUPPORTED KEYWORDS
+  keywords = ["FOPR", "FWIR", "FGIR", "FWPR"]
+
+  # REPORT STEPS THAT ECALC SHOULD RUN
+  ecalc_reportsteps = [x for x in range(120) if (x + 1) % 10 == 0]
+
+  # FINISH SETUP
+  setup_done = True
+  opm_embedded.OpmLog.info("PYACTION SETUP DONE")
+
+
+# CURRENT SUMMARY, REPORT STEP and SCHEDULE
+current_summary_state = opm_embedded.current_summary_state
+current_report_step = opm_embedded.current_report_step
+current_schedule = opm_embedded.current_schedule
+
+
+# UPDATE STATE EVERY REPORTSTEP
+if "DATES" not in state:
+    state["DATES"] = []
+
+# only add state if not duplicate DATES exists
+time = current_schedule.reportsteps[current_report_step]
+if not time in state["DATES"]:
+    state["DATES"].append(time)
+
+    # add other state columns
+    for kw in keywords:
+        if kw in current_summary_state:
+            if kw not in state:
+                state[kw] = []
+            state[kw].append(current_summary_state[kw])
+
+
+
+# RUN ECALC FOR SELECTED REPORT STEPS
+if (current_report_step in ecalc_reportsteps):
+  # SAVE STATE AS TIMESERIES TO BE USED BY ECALC
+  pd.DataFrame(state).to_csv(timeseries_path, index=None)
+  
+  # RUN ECALC AND OUTPUT TO TERMINAL
+  opm_embedded.OpmLog.info("\n" + "="*60)
+  opm_embedded.OpmLog.info(f"Running Ecalc simulation for reportstep {current_report_step}...")
+  output = subprocess.run(
+    f"ecalc run {yaml_model_path} --output-folder={ecalc_output} --name-prefix=model_timestep_{current_report_step}", 
+    shell=True, 
+    text=True,
+    capture_output=True
+  )
+  
+  print(output.stdout)
+  print(output.stderr)
+
+  opm_embedded.OpmLog.info("="*60)
+
+
+
