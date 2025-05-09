@@ -4,4 +4,4 @@ All examples and developments for the integration are displayed in in their resp
 
 ## Purpose
 
-This repository aims to keep track of the current development of the integration between Ecalc and OPM/Flow until today. In this way it is easy to see the steps taken until here. To start browsing the code just change to the respoective branch of interest.
+This repository aims to keep track of the current development of the integration between Ecalc and OPM/Flow until today. In this way it is easy to see the steps taken until here. To start browsing the code just change to the respective branch of interest.
